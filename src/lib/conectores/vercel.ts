@@ -18,9 +18,9 @@ interface Despliegue {
  * con el enlace al panel.
  */
 export async function leerVercel(): Promise<MedidorSinEstado[]> {
-  const token = process.env.VERCEL_TOKEN;
+  const token = process.env.TOKEN_VERCEL;
   if (!token) {
-    return [{ id: "vercel", servicio: "Vercel", nombre: "Alojamiento", error: falta("VERCEL_TOKEN"), enlace: "https://vercel.com/dashboard" }];
+    return [{ id: "vercel", servicio: "Vercel", nombre: "Alojamiento", error: falta("TOKEN_VERCEL"), enlace: "https://vercel.com/dashboard" }];
   }
 
   try {
