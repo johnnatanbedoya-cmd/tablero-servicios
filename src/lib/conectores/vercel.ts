@@ -46,7 +46,7 @@ export async function leerVercel(): Promise<MedidorSinEstado[]> {
         usado: fallo ? 1 : 0,
         limite: 1,
         unidad: "",
-        nota: `${fallo ? "Falló" : "OK"} (${estado}) · ${new Date(d.created).toLocaleString("es-CO", { timeZone: "America/Bogota" })}. Consumo del plan: ver panel.`,
+        nota: `${fallo ? "Falló" : "OK"} (${estado}) · ${new Date(d.created).toLocaleString("es-CO", { timeZone: "America/Bogota" })} · Consumo del plan: ver panel`,
         enlace: `https://vercel.com/dashboard/usage`,
       };
     });

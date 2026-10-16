@@ -31,6 +31,9 @@ export const GITHUB_REPOS_CI = ["bateria-riesgo-psicosocial"];
 /** Minutos de GitHub Actions incluidos en el plan gratis (repos privados). */
 export const GITHUB_MINUTOS_INCLUIDOS = 2000;
 
+/** Plan gratis de Resend, compartido entre todas las apps de la cuenta. */
+export const RESEND_LIMITES = { porMes: 3000, porDia: 100 };
+
 export interface Dominio {
   nombre: string;
   donde: string;
@@ -72,16 +75,6 @@ export const DATOS_MANUALES: DatoManual[] = [
     actualizado: "2026-10-16",
     nota: "Plan Personal: 1.000 créditos por periodo (26 sep–26 oct 2026). Además quedan 215,6 de 500 créditos de un paquete extra que no vence, y está activa la recarga automática (US$5 por 500). Netlify no los da por API: el dato se copia de Billing.",
     enlace: "https://app.netlify.com/teams/johnnatan-bedoya/billing/general#credit-balance",
-  },
-  {
-    id: "resend-correos-mes",
-    servicio: "Resend",
-    nombre: "Correos enviados este mes",
-    apps: ["OGP", "Agenda Psicológica"],
-    limite: 3000,
-    unidad: "correos",
-    nota: "Plan gratis: 3.000 al mes y 100 al día, compartidos entre las apps.",
-    enlace: "https://resend.com/emails",
   },
   {
     id: "anthropic-saldo",

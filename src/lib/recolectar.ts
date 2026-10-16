@@ -4,6 +4,7 @@ import { leerDominios } from "@/lib/conectores/dominios";
 import { leerGithub } from "@/lib/conectores/github";
 import { leerNeon } from "@/lib/conectores/neon";
 import { leerNetlify } from "@/lib/conectores/netlify";
+import { leerResend } from "@/lib/conectores/resend";
 import { leerVercel } from "@/lib/conectores/vercel";
 import { mensajeError } from "@/lib/http";
 import { conEstado, ordenarPorGravedad } from "@/lib/semaforo";
@@ -31,6 +32,7 @@ const CONECTORES: [string, () => Promise<MedidorSinEstado[]>][] = [
   ["Netlify", leerNetlify],
   ["Vercel", leerVercel],
   ["GitHub", leerGithub],
+  ["Resend", leerResend],
   ["Anthropic", leerAnthropic],
   ["Dominios", leerDominios],
 ];
