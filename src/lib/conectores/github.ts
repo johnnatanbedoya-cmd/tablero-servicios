@@ -1,5 +1,5 @@
 import { GITHUB_MINUTOS_INCLUIDOS, GITHUB_USUARIO } from "@/config/servicios";
-import { falta, mensajeError, pedirJson } from "@/lib/http";
+import { mensajeError, pedirJson } from "@/lib/http";
 import type { MedidorSinEstado } from "@/lib/tipos";
 
 interface ItemUso {
@@ -12,13 +12,14 @@ interface ItemUso {
 /**
  * Minutos de GitHub Actions del mes (los repos públicos no consumen).
  * Usa el endpoint nuevo de facturación y, si la cuenta aún no lo tiene, el
- * antiguo /settings/billing/actions.
+ * antiguo /settings/billing/actions. Es opcional: los minutos gratis sobran
+ * para el CI de la Batería, así que sin GITHUB_TOKEN la fila no aparece.
  */
 export async function leerGithub(): Promise<MedidorSinEstado[]> {
   const enlace = "https://github.com/settings/billing/usage";
   const base = { id: "github-actions", servicio: "GitHub", nombre: "Minutos de Actions", apps: ["Batería RP (CI)"], enlace };
   const token = process.env.GITHUB_TOKEN;
-  if (!token) return [{ ...base, error: falta("GITHUB_TOKEN") }];
+  if (!token) return [];
 
   const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
   const ahora = new Date();
