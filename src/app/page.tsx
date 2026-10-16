@@ -27,8 +27,8 @@ function numero(n: number, unidad?: string): string {
   return unidad ? `${texto} ${unidad}` : texto;
 }
 
-function fecha(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Bogota" });
+function fecha(iso: string, timeZone = "America/Bogota"): string {
+  return new Date(iso).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric", timeZone });
 }
 
 function Tarjeta({ m }: { m: Medidor }) {
@@ -74,7 +74,8 @@ function Tarjeta({ m }: { m: Medidor }) {
             <p className="mt-1.5 text-xs text-suave">
               Al ritmo actual cerraría el periodo en ~{numero(m.proyeccion, m.unidad)}
               {m.proyeccion > m.limite! && <strong style={{ color: "var(--rojo)" }}> (se pasa del límite)</strong>}
-              {m.periodoFin && <> · se reinicia el {fecha(m.periodoFin)}</>}
+              {/* Los periodos cierran a medianoche UTC: en hora Colombia saldría el día anterior. */}
+              {m.periodoFin && <> · se reinicia el {fecha(m.periodoFin, "UTC")}</>}
             </p>
           )}
         </div>
