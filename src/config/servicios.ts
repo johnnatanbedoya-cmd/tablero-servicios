@@ -26,6 +26,8 @@ export const APPS_POR_PROYECTO_VERCEL: Record<string, string[]> = {
 };
 
 export const GITHUB_USUARIO = "johnnatanbedoya-cmd";
+/** Repos privados que corren GitHub Actions (los públicos no consumen minutos). */
+export const GITHUB_REPOS_CI = ["bateria-riesgo-psicosocial"];
 /** Minutos de GitHub Actions incluidos en el plan gratis (repos privados). */
 export const GITHUB_MINUTOS_INCLUIDOS = 2000;
 
