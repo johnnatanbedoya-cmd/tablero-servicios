@@ -62,12 +62,14 @@ export const DATOS_MANUALES: DatoManual[] = [
   {
     id: "netlify-creditos-mes",
     servicio: "Netlify",
-    nombre: "Créditos usados este mes (equipo adulto)",
+    nombre: "Créditos del plan usados (equipo adulto)",
     apps: ["Agenda Psicológica", "Batería RP"],
+    usado: 330.6,
     limite: 1000,
     unidad: "créditos",
-    nota: "Plan Personal: 1.000 créditos al mes. Netlify no los da por API; el dato se copia de Usage & billing.",
-    enlace: "https://app.netlify.com/teams/adulto/billing/usage",
+    actualizado: "2026-10-16",
+    nota: "Plan Personal: 1.000 créditos por periodo (26 sep–26 oct 2026). Además quedan 215,6 de 500 créditos de un paquete extra que no vence, y está activa la recarga automática (US$5 por 500). Netlify no los da por API: el dato se copia de Billing.",
+    enlace: "https://app.netlify.com/teams/johnnatan-bedoya/billing/general#credit-balance",
   },
   {
     id: "resend-correos-mes",

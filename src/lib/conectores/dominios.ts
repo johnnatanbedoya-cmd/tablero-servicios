@@ -31,7 +31,7 @@ export async function leerDominios(): Promise<MedidorSinEstado[]> {
         servicio: "Dominios",
         nombre: d.nombre,
         apps: d.apps,
-        enlace: "https://app.netlify.com/teams/adulto/dns",
+        enlace: "https://app.netlify.com/teams/johnnatan-bedoya/dns",
       };
       try {
         const r = await pedirJson<RespuestaRdap>(urlRdap(d.nombre), {
