@@ -1,23 +1,26 @@
-import { APPS_POR_EQUIPO_NETLIFY } from "@/config/servicios";
+import { APPS_POR_SITIO_NETLIFY } from "@/config/servicios";
 import { falta, mensajeError, pedirJson } from "@/lib/http";
 import type { MedidorSinEstado } from "@/lib/tipos";
 
 const API = "https://api.netlify.com/api/v1";
-const GB = 1024 ** 3;
 
-interface CuentaNetlify {
+interface Sitio {
   id: string;
-  slug: string;
   name: string;
-  type_name?: string;
+  admin_url?: string;
+}
+
+interface Deploy {
+  state?: string;
+  created_at?: string;
+  error_message?: string | null;
 }
 
 /**
- * Netlify no documenta oficialmente un endpoint de consumo. Estos dos
- * (ancho de banda y minutos de build) son los que su propio panel usa y los
- * que su equipo de soporte recomienda en el foro; en los planes nuevos "por
- * créditos" pueden no responder, y entonces la fila sale en gris con el
- * enlace al panel.
+ * Los equipos de Netlify en planes "por créditos" no exponen el consumo por
+ * API (solo en el panel), así que los créditos son un dato manual en
+ * src/config/servicios.ts. Lo que sí se lee acá: si el último despliegue a
+ * producción de cada sitio falló (= la app no se actualizó).
  */
 export async function leerNetlify(): Promise<MedidorSinEstado[]> {
   const token = process.env.NETLIFY_TOKEN;
@@ -26,82 +29,38 @@ export async function leerNetlify(): Promise<MedidorSinEstado[]> {
   }
   const headers = { Authorization: `Bearer ${token}` };
 
-  let cuentas: CuentaNetlify[];
   try {
-    cuentas = await pedirJson<CuentaNetlify[]>(`${API}/accounts`, { headers });
+    const sitios = await pedirJson<Sitio[]>(`${API}/sites?filter=all&per_page=100`, { headers });
+    return Promise.all(sitios.map((s) => leerSitio(s, headers)));
   } catch (e) {
     return [{ id: "netlify", servicio: "Netlify", nombre: "Alojamiento", error: mensajeError(e), enlace: "https://app.netlify.com" }];
   }
-
-  const filas = await Promise.all(cuentas.map((c) => leerCuenta(c, headers)));
-  return filas.flat();
 }
 
-function appsDe(c: CuentaNetlify): string[] {
-  const clave = Object.keys(APPS_POR_EQUIPO_NETLIFY).find(
-    (k) => k.toLowerCase() === c.slug.toLowerCase() || k.toLowerCase() === c.name.toLowerCase()
-  );
-  return clave ? APPS_POR_EQUIPO_NETLIFY[clave] : [];
-}
-
-async function leerCuenta(c: CuentaNetlify, headers: HeadersInit): Promise<MedidorSinEstado[]> {
-  const enlace = `https://app.netlify.com/teams/${c.slug}/usage`;
-  const base = { servicio: "Netlify", apps: appsDe(c), enlace };
-  const equipo = `Equipo ${c.name}${c.type_name ? ` (${c.type_name})` : ""}`;
-
-  const [ancho, builds] = await Promise.allSettled([
-    pedirJson<{ used?: number; included?: number; period_start_date?: string; period_end_date?: string }>(
-      `${API}/accounts/${c.slug}/bandwidth`,
-      { headers }
-    ),
-    pedirJson<{
-      minutes?: { current?: number; included_minutes?: number; period_start_date?: string; period_end_date?: string };
-    }>(`${API}/${c.slug}/builds/status`, { headers }),
-  ]);
-
-  const filas: MedidorSinEstado[] = [];
-
-  if (ancho.status === "fulfilled" && ancho.value.included) {
-    const a = ancho.value;
-    filas.push({
+async function leerSitio(s: Sitio, headers: HeadersInit): Promise<MedidorSinEstado> {
+  const base = {
+    id: `netlify-${s.id}-despliegue`,
+    servicio: "Netlify",
+    nombre: `${s.name} · último despliegue`,
+    apps: APPS_POR_SITIO_NETLIFY[s.name] ?? [],
+    enlace: s.admin_url ? `${s.admin_url}/deploys` : "https://app.netlify.com",
+  };
+  try {
+    const [d] = await pedirJson<Deploy[]>(`${API}/sites/${s.id}/deploys?production=true&per_page=1`, { headers });
+    if (!d) return { ...base, error: "Sin despliegues todavía" };
+    const fallo = d.state === "error";
+    const cuando = d.created_at
+      ? new Date(d.created_at).toLocaleString("es-CO", { timeZone: "America/Bogota" })
+      : "";
+    return {
       ...base,
-      id: `netlify-${c.id}-ancho`,
-      nombre: `${equipo} · ancho de banda`,
-      usado: (a.used ?? 0) / GB,
-      limite: a.included! / GB,
-      unidad: "GB",
-      periodoInicio: a.period_start_date,
-      periodoFin: a.period_end_date,
-    });
-  } else {
-    filas.push({
-      ...base,
-      id: `netlify-${c.id}-ancho`,
-      nombre: `${equipo} · ancho de banda`,
-      error: ancho.status === "rejected" ? mensajeError(ancho.reason) : "Netlify no informó el límite (¿plan por créditos?). Revísalo en el panel.",
-    });
+      // 0/1 para reusar el semáforo: 1 de 1 = rojo.
+      usado: fallo ? 1 : 0,
+      limite: 1,
+      unidad: "",
+      nota: `${fallo ? `Falló${d.error_message ? `: ${d.error_message}` : ""}` : "OK"} (${d.state ?? "?"}) · ${cuando}`,
+    };
+  } catch (e) {
+    return { ...base, error: mensajeError(e) };
   }
-
-  const m = builds.status === "fulfilled" ? builds.value.minutes : undefined;
-  if (m?.included_minutes) {
-    filas.push({
-      ...base,
-      id: `netlify-${c.id}-build`,
-      nombre: `${equipo} · minutos de build`,
-      usado: m.current ?? 0,
-      limite: m.included_minutes,
-      unidad: "min",
-      periodoInicio: m.period_start_date,
-      periodoFin: m.period_end_date,
-    });
-  } else {
-    filas.push({
-      ...base,
-      id: `netlify-${c.id}-build`,
-      nombre: `${equipo} · minutos de build`,
-      error: builds.status === "rejected" ? mensajeError(builds.reason) : "Netlify no informó el límite (¿plan por créditos?). Revísalo en el panel.",
-    });
-  }
-
-  return filas;
 }

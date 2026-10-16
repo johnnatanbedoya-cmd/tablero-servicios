@@ -15,9 +15,9 @@ export const NEON_LIMITES = {
   almacenamientoGB: 1,
 };
 
-/** Equipo de Netlify (slug) → apps que aloja. */
-export const APPS_POR_EQUIPO_NETLIFY: Record<string, string[]> = {
-  adulto: ["Agenda Psicológica", "Batería RP"],
+/** Sitio de Netlify (nombre) → app. */
+export const APPS_POR_SITIO_NETLIFY: Record<string, string[]> = {
+  "agenda-psicologica": ["Agenda Psicológica"],
 };
 
 /** Proyecto de Vercel → app. */
@@ -59,6 +59,16 @@ export interface DatoManual {
 }
 
 export const DATOS_MANUALES: DatoManual[] = [
+  {
+    id: "netlify-creditos-mes",
+    servicio: "Netlify",
+    nombre: "Créditos usados este mes (equipo adulto)",
+    apps: ["Agenda Psicológica", "Batería RP"],
+    limite: 1000,
+    unidad: "créditos",
+    nota: "Plan Personal: 1.000 créditos al mes. Netlify no los da por API; el dato se copia de Usage & billing.",
+    enlace: "https://app.netlify.com/teams/adulto/billing/usage",
+  },
   {
     id: "resend-correos-mes",
     servicio: "Resend",
