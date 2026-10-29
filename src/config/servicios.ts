@@ -18,6 +18,7 @@ export const NEON_LIMITES = {
 /** Sitio de Netlify (nombre) → app. */
 export const APPS_POR_SITIO_NETLIFY: Record<string, string[]> = {
   "agenda-psicologica": ["Agenda Psicológica"],
+  rpcolombia: ["Batería RP"],
 };
 
 /** Proyecto de Vercel → app. */
