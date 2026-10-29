@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { APPS_POR_SITIO_NETLIFY } from "@/config/servicios";
 import { falta, mensajeError, pedirJson } from "@/lib/http";
 import type { MedidorSinEstado } from "@/lib/tipos";
@@ -33,7 +34,12 @@ export async function leerNetlify(): Promise<MedidorSinEstado[]> {
     const sitios = await pedirJson<Sitio[]>(`${API}/sites?filter=all&per_page=100`, { headers });
     return Promise.all(sitios.map((s) => leerSitio(s, headers)));
   } catch (e) {
-    return [{ id: "netlify", servicio: "Netlify", nombre: "Alojamiento", error: mensajeError(e), enlace: "https://app.netlify.com" }];
+    // La huella identifica qué token está configurado sin revelarlo, para
+    // saber si Vercel sigue usando uno viejo.
+    const huella = createHash("sha256").update(token).digest("hex").slice(0, 8);
+    return [
+      { id: "netlify", servicio: "Netlify", nombre: "Alojamiento", error: `${mensajeError(e)} (huella del token: ${huella})`, enlace: "https://app.netlify.com" },
+    ];
   }
 }
 
